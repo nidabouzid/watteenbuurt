@@ -2,6 +2,19 @@
 
 Real-time energy neighbourhood simulator. Models 30 houses with solar panels, heat pumps, and EV chargers, plus public charging stations. Visualises live power flows on an interactive web dashboard.
 
+# TL;DR
+
+A public image has been pushed:
+
+```
+docker pull nbodev/watteenbuurt:latest
+docker run -p 8080:8080 nbodev/watteenbuurt:latest`
+```
+
+The result:
+
+![ui.png](images/ui.png)
+
 ## Requirements
 
 | Tool | Minimum version |
