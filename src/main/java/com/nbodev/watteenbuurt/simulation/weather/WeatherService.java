@@ -1,6 +1,7 @@
 package com.nbodev.watteenbuurt.simulation.weather;
 
 
+import com.nbodev.watteenbuurt.config.SimulationConfig;
 import com.nbodev.watteenbuurt.domain.weather.Season;
 import com.nbodev.watteenbuurt.domain.weather.WeatherState;
 import org.springframework.stereotype.Service;
@@ -30,8 +31,8 @@ public class WeatherService {
 
     private final long seed;
 
-    public WeatherService(long seed) {
-        this.seed = seed;
+    public WeatherService(SimulationConfig config) {
+        this.seed = config.getRandomSeed();
     }
 
     public WeatherState compute(LocalDateTime time) {
