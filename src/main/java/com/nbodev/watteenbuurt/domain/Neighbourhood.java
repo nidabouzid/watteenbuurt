@@ -15,11 +15,6 @@ public class Neighbourhood {
     private final List<PublicCharger> publicChargers;
 
     public Neighbourhood(List<House> houses, List<PublicCharger> publicChargers) {
-        if (houses.size() != 30)
-            throw new IllegalArgumentException("Neighbourhood must have exactly 30 houses, got: " + houses.size());
-        if (publicChargers.size() != 6)
-            throw new IllegalArgumentException("Neighbourhood must have exactly 6 public chargers, got: " + publicChargers.size());
-
         this.houses = List.copyOf(houses);
         this.publicChargers = List.copyOf(publicChargers);
     }

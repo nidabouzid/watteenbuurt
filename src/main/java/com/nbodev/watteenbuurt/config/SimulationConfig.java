@@ -1,8 +1,11 @@
 package com.nbodev.watteenbuurt.config;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 /**
  * All tunable knobs in one place — override via application.yml.
@@ -13,21 +16,35 @@ import org.springframework.stereotype.Component;
  * Home EV chargers: 20% → 6  houses
  * (combinations allowed — assigned by seeded RNG)
  */
-@Component
+@Validated
 @Data
 @ConfigurationProperties(prefix = "simulation")
 public class SimulationConfig {
 
-    private final long randomSeed = 42L;
-    private final int houseCount = 30;
-    private final int publicChargerCount = 6;
+    private final long randomSeed;
+    private final int houseCount;
+    private final int publicChargerCount;
+    private final double pvFraction;
+    private final double heatPumpFraction;
+    private final double homeEvFraction;
+    private final int tickIntervalMs;
 
-    private final double pvFraction = 0.40;
-    private final double heatPumpFraction = 0.30;
-    private final double homeEvFraction = 0.20;
-
-    // Real-time interval between ticks (ms). 200ms = 5 sim-minutes/real-second.
-    private final int tickIntervalMs = 200;
-
+    public SimulationConfig(
+            long randomSeed,
+            @Min(1) int houseCount,
+            @Min(1) int publicChargerCount,
+            @DecimalMin("0.0") @DecimalMax("1.0") double pvFraction,
+            @DecimalMin("0.0") @DecimalMax("1.0") double heatPumpFraction,
+            @DecimalMin("0.0") @DecimalMax("1.0") double homeEvFraction,
+            @Min(200) int tickIntervalMs
+    ) {
+        this.randomSeed = randomSeed;
+        this.houseCount = houseCount;
+        this.publicChargerCount = publicChargerCount;
+        this.pvFraction = pvFraction;
+        this.heatPumpFraction = heatPumpFraction;
+        this.homeEvFraction = homeEvFraction;
+        this.tickIntervalMs = tickIntervalMs;
+    }
 
 }

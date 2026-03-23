@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Builds the neighbourhood from config using a seeded RNG.
+ * Builds the neighbourhood from config using a seeded RNG (random number generator).
  * Asset distribution is deterministic — same seed always produces the same layout.
  */
 @Component
