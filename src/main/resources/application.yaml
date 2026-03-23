@@ -1,3 +1,12 @@
 spring:
   application:
     name: watteenbuurt
+
+simulation:
+  random-seed: 42
+  house-count: 30
+  public-charger-count: 6
+  pv-fraction: 0.40
+  heat-pump-fraction: 0.30
+  home-ev-fraction: 0.20
+  tick-interval-ms: 200
