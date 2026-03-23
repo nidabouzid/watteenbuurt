@@ -11,6 +11,8 @@ import com.nbodev.watteenbuurt.domain.PublicCharger;
 import com.nbodev.watteenbuurt.domain.asset.Asset;
 import com.nbodev.watteenbuurt.domain.asset.AssetType;
 import com.nbodev.watteenbuurt.simulation.SimulationEngine;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,6 +21,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/neighbourhood")
+@Tag(name = "Neighbourhood", description = "Houses, assets and public chargers")
 public class NeighbourhoodController {
 
     private final SimulationEngine engine;
@@ -31,6 +34,7 @@ public class NeighbourhoodController {
      * GET /api/neighbourhood/summary
      * Aggregate counts and current total power. Lightweight.
      */
+    @Operation(summary = "Neighbourhood summary", description = "Aggregate counts and current total power.")
     @GetMapping("/summary")
     public NeighbourhoodSummaryDto getSummary() {
         Neighbourhood n = engine.getNeighbourhood();
@@ -48,6 +52,7 @@ public class NeighbourhoodController {
      * GET /api/neighbourhood/houses
      * All 30 houses with per-asset current power and cumulative kWh.
      */
+    @Operation(summary = "All 30 houses", description = "Per-house net power and per-asset cumulative kWh.")
     @GetMapping("/houses")
     public List<HouseDto> getHouses() {
         return engine.getNeighbourhood().getHouses().stream()
@@ -59,6 +64,7 @@ public class NeighbourhoodController {
      * GET /api/neighbourhood/chargers
      * All 6 public chargers with status and cumulative kWh.
      */
+    @Operation(summary = "All 6 public chargers")
     @GetMapping("/chargers")
     public List<PublicChargerDto> getChargers() {
         return engine.getNeighbourhood().getPublicChargers().stream()
