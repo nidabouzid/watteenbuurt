@@ -58,7 +58,9 @@ public class SimulationEngine {
         this.config = config;
         this.weatherService = weatherService;
         this.factory = factory;
-        this.clock = new SimulationClock(config.getStartDateTime());
+        this.clock = new SimulationClock(
+                LocalDateTime.of(2025, 1, 6, 0, 0) // start on a Monday in winter
+        );
     }
 
     @PostConstruct
