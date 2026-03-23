@@ -1,5 +1,7 @@
 package com.nbodev.watteenbuurt.simulation;
 
+import lombok.Getter;
+
 import java.time.LocalDateTime;
 
 /**
@@ -10,6 +12,7 @@ import java.time.LocalDateTime;
  * midday solar, evening demand) without overwhelming memory or compute.
  * Finer steps add no realism for residential loads; coarser steps lose shape.
  */
+@Getter
 public class SimulationClock {
 
     public static final int TICK_MINUTES = 1;
@@ -30,16 +33,8 @@ public class SimulationClock {
         return simulatedTime;
     }
 
-    public LocalDateTime getSimulatedTime() {
-        return simulatedTime;
-    }
-
     public void setSimulatedTime(LocalDateTime time) {
         this.simulatedTime = time;
-    }
-
-    public boolean isRunning() {
-        return running;
     }
 
     public void start() {

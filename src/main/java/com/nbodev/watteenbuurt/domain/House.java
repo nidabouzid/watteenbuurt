@@ -4,6 +4,7 @@ package com.nbodev.watteenbuurt.domain;
 import com.nbodev.watteenbuurt.domain.asset.Asset;
 import com.nbodev.watteenbuurt.domain.asset.AssetType;
 import com.nbodev.watteenbuurt.domain.asset.EnergyMeter;
+import lombok.Getter;
 
 import java.util.List;
 
@@ -11,6 +12,7 @@ import java.util.List;
  * A residential unit with one or more energy assets and an aggregate meter.
  * The house meter tracks net energy (consumption minus PV generation).
  */
+@Getter
 public class House {
 
     private final String id;
@@ -45,15 +47,4 @@ public class House {
         return assets.stream().anyMatch(a -> a.getType() == type);
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public List<Asset> getAssets() {
-        return assets;
-    }
-
-    public EnergyMeter getNetMeter() {
-        return netMeter;
-    }
 }

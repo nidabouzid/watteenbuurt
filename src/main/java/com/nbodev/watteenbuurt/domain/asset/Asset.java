@@ -1,6 +1,7 @@
 package com.nbodev.watteenbuurt.domain.asset;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * A single energy asset (load or generator) within a house or public infrastructure.
@@ -13,6 +14,7 @@ public class Asset {
     private final AssetType type;
     private final EnergyMeter meter = new EnergyMeter();
 
+    @Setter
     private double currentPowerKw = 0.0;
 
     public Asset(String id, AssetType type) {
