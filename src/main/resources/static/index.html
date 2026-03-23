@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>WattEenBuurt</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --border: #2a2d3a;
+            --text: #e8eaf0;
+            --muted: #6b7080;
+            --green: #4ade80;
+            --amber: #fbbf24;
+            --blue: #60a5fa;
+            --red: #f87171;
+            --purple: #a78bfa;
+        }
+
+        :root.light {
+            --bg: #f4f5f7;
+            --surface: #ffffff;
+            --border: #e2e4ea;
+            --text: #1a1d27;
+            --muted: #6b7080;
+            --green: #16a34a;
+            --amber: #d97706;
+            --blue: #2563eb;
+            --red: #dc2626;
+            --purple: #7c3aed;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: system-ui, sans-serif;
+            font-size: 14px;
+            min-height: 100vh;
+        }
+
+        /* ── Top bar ── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            padding: 14px 24px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .topbar .logo {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--green);
+            letter-spacing: -0.5px;
+        }
+
+        .topbar .pill {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .topbar .pill span {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .topbar .pill.power span {
+            color: var(--amber);
+        }
+
+        .topbar .pill.season span {
+            color: var(--blue);
+        }
+
+        .topbar .pill.temp span {
+            color: var(--red);
+        }
+
+        .controls {
+            margin-left: auto;
+            display: flex;
+            gap: 8px;
+        }
+
+        button {
+            padding: 6px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.15s;
+        }
+
+        button:hover {
+            background: var(--border);
+        }
+
+        button.active {
+            background: var(--green);
+            color: #000;
+            border-color: var(--green);
+        }
+
+        /* ── Status dot ── */
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--muted);
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .dot.running {
+            background: var(--green);
+            box-shadow: 0 0 6px var(--green);
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        /* ── Main layout ── */
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 1fr 340px;
+            grid-template-rows: auto auto;
+            gap: 16px;
+            padding: 16px 24px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .card-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
+
+        /* ── Chart ── */
+        .chart-container {
+            position: relative;
+            height: 160px;
+        }
+
+        /* ── Summary stats ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .stat {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--amber);
+        }
+
+        .stat-value.green {
+            color: var(--green);
+        }
+
+        .stat-value.blue {
+            color: var(--blue);
+        }
+
+        .stat-value.purple {
+            color: var(--purple);
+        }
+
+        .stat-sub {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        /* ── Weather ── */
+        .weather-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .weather-item {
+            flex: 1;
+            min-width: 70px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .weather-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .weather-val {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .weather-lbl {
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        /* ── Houses ── */
+        .houses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 10px;
+        }
+
+        .house-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .house-card.exporting {
+            border-color: var(--green);
+        }
+
+        .house-card.charging {
+            border-color: var(--blue);
+        }
+
+        .house-id {
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .house-power {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .house-power.positive {
+            color: var(--amber);
+        }
+
+        .house-power.negative {
+            color: var(--green);
+        }
+
+        .asset-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+        }
+
+        .tag {
+            font-size: 9px;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .tag.pv {
+            background: color-mix(in srgb, var(--green) 15%, transparent);
+            color: var(--green);
+        }
+
+        .tag.hp {
+            background: color-mix(in srgb, var(--amber) 15%, transparent);
+            color: var(--amber);
+        }
+
+        .tag.ev {
+            background: color-mix(in srgb, var(--blue) 15%, transparent);
+            color: var(--blue);
+        }
+
+        .tag.kwh {
+            background: color-mix(in srgb, var(--purple) 15%, transparent);
+            color: var(--purple);
+        }
+
+        /* ── Public chargers ── */
+        .charger-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .charger-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            transition: border-color 0.3s;
+        }
+
+        .charger-row.active {
+            border-color: var(--blue);
+        }
+
+        .charger-name {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .charger-kwh {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .charger-status {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .charger-status.on {
+            color: var(--blue);
+        }
+
+        .charger-power {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--blue);
+            min-width: 52px;
+            text-align: right;
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+    <div class="logo">⚡ WattEenBuurt</div>
+
+    <div class="pill">
+        <span class="dot" id="statusDot"></span>
+        <span id="simTime">--</span>
+    </div>
+
+    <div class="pill season">Season: <span id="season">--</span></div>
+    <div class="pill temp">Temp: <span id="temp">--</span></div>
+    <div class="pill power">Grid load: <span id="totalPower">--</span> kW</div>
+
+    <div class="controls">
+        <button id="btnTheme" onclick="toggleTheme()">☀️ Light</button>
+        <button id="btnPause" onclick="togglePause()">Pause</button>
+    </div>
+</div>
+
+<!-- Main layout -->
+<div class="main">
+
+    <!-- Col 1: Chart -->
+    <div class="card" style="grid-column: 1;">
+        <div class="card-title">Neighbourhood load — last 24 simulated hours (kW)</div>
+        <div class="chart-container">
+            <canvas id="loadChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Col 2: Summary + Weather stacked -->
+    <div style="grid-column: 2; display: flex; flex-direction: column; gap: 16px;">
+
+        <div class="card">
+            <div class="card-title">Summary</div>
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-label">Houses</div>
+                    <div class="stat-value green" id="statHouses">--</div>
+                    <div class="stat-sub">total</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">With PV</div>
+                    <div class="stat-value green" id="statPv">--</div>
+                    <div class="stat-sub">solar panels</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Heat pumps</div>
+                    <div class="stat-value" id="statHp">--</div>
+                    <div class="stat-sub">installed</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Home EVs</div>
+                    <div class="stat-value blue" id="statEv">--</div>
+                    <div class="stat-sub">chargers</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Weather</div>
+            <div class="weather-bar">
+                <div class="weather-item">
+                    <div class="weather-icon" id="weatherIcon">--</div>
+                    <div class="weather-val" id="weatherCloud">--</div>
+                    <div class="weather-lbl">cloud cover</div>
+                </div>
+                <div class="weather-item">
+                    <div class="weather-icon">🌡️</div>
+                    <div class="weather-val" id="weatherTemp">--</div>
+                    <div class="weather-lbl">temperature</div>
+                </div>
+                <div class="weather-item">
+                    <div class="weather-icon">☀️</div>
+                    <div class="weather-val" id="weatherIrr">--</div>
+                    <div class="weather-lbl">irradiance</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Col 3: Public chargers -->
+    <div class="card" style="grid-column: 3; grid-row: 1;">
+        <div class="card-title">Public EV chargers</div>
+        <div class="charger-list" id="chargerList"></div>
+    </div>
+
+    <!-- Row 2: Houses full width -->
+    <div class="card" style="grid-column: 1 / 4; grid-row: 2;">
+        <div class="card-title">
+            Houses — current net power &amp; cumulative energy
+            <span id="exportCount" style="margin-left: 12px; color: var(--green); font-weight: 600;"></span>
+        </div>
+        <div class="houses-grid" id="housesGrid"></div>
+    </div>
+
+</div>
+
+<script>
+    // ── Theme ─────────────────────────────────────────────────────
+    function toggleTheme() {
+        const isLight = document.documentElement.classList.toggle('light');
+        document.getElementById('btnTheme').textContent = isLight ? '🌙 Dark' : '☀️ Light';
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        updateChartTheme(isLight);
+    }
+
+    function updateChartTheme(isLight) {
+        const gridColor = isLight ? '#e2e4ea' : '#2a2d3a';
+        const tickColor = isLight ? '#6b7080' : '#6b7080';
+        const tempColor = isLight ? '#dc2626' : '#f87171';
+        const labelColor = isLight ? '#6b7080' : '#6b7080';
+
+        chart.options.scales.x.ticks.color = tickColor;
+        chart.options.scales.x.grid.color = gridColor;
+        chart.options.scales.y.ticks.color = tickColor;
+        chart.options.scales.y.grid.color = gridColor;
+        chart.options.scales.y.title.color = tickColor;
+        chart.options.scales.yTemp.ticks.color = tempColor;
+        chart.options.scales.yTemp.title.color = tempColor;
+        chart.data.datasets[1].borderColor = tempColor;
+        chart.options.plugins.legend.labels.color = labelColor;
+        chart.update('none');
+    }
+
+    // Restore saved theme on load
+    if (localStorage.getItem('theme') === 'light') {
+        document.documentElement.classList.add('light');
+    }
+
+    // ── Chart setup ───────────────────────────────────────────────
+    const ctx = document.getElementById('loadChart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Net load (kW)',
+                    data: [],
+                    borderColor: '#fbbf24',
+                    backgroundColor: 'rgba(251,191,36,0.08)',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: true,
+                    tension: 0.3
+                },
+                {
+                    label: 'Temperature (°C)',
+                    data: [],
+                    borderColor: '#f87171',
+                    backgroundColor: 'transparent',
+                    borderWidth: 1.5,
+                    pointRadius: 0,
+                    tension: 0.3,
+                    yAxisID: 'yTemp'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {duration: 0},
+            interaction: {mode: 'index', intersect: false},
+            scales: {
+                x: {
+                    ticks: {color: '#6b7080', maxTicksLimit: 12, maxRotation: 0, font: {size: 11}},
+                    grid: {color: '#2a2d3a'}
+                },
+                y: {
+                    ticks: {color: '#6b7080', font: {size: 11}},
+                    grid: {color: '#2a2d3a'},
+                    title: {display: true, text: 'kW', color: '#6b7080', font: {size: 11}}
+                },
+                yTemp: {
+                    position: 'right',
+                    ticks: {color: '#f87171', font: {size: 11}},
+                    grid: {drawOnChartArea: false},
+                    title: {display: true, text: '°C', color: '#f87171', font: {size: 11}}
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {color: '#6b7080', font: {size: 11}, boxWidth: 12}
+                }
+            }
+        }
+    });
+
+    // Apply saved theme to chart on load
+    if (localStorage.getItem('theme') === 'light') {
+        document.getElementById('btnTheme').textContent = '🌙 Dark';
+        updateChartTheme(true);
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────
+    function fmt(n, digits = 1) {
+        return Number(n).toFixed(digits);
+    }
+
+    function formatTime(iso) {
+        const d = new Date(iso);
+        if (isNaN(d)) return iso;
+        return d.toLocaleString('en-GB', {
+            month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+    }
+
+    function formatHHMM(iso) {
+        const d = new Date(iso);
+        if (isNaN(d)) return iso.slice(11, 16);
+        return d.toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'});
+    }
+
+    function cloudIcon(factor) {
+        if (factor < 0.2) return '☀️';
+        if (factor < 0.5) return '⛅';
+        if (factor < 0.8) return '🌥️';
+        return '☁️';
+    }
+
+    function seasonIcon(season) {
+        return {SPRING: '🌱', SUMMER: '🌞', AUTUMN: '🍂', WINTER: '❄️'}[season] ?? '🌍';
+    }
+
+    // ── Asset tags ────────────────────────────────────────────────
+    function assetTags(assets) {
+        return assets.map(a => {
+            switch (a.type) {
+                case 'PV_PANEL':
+                    return `<span class="tag pv">PV ${fmt(a.currentPowerKw)}kW</span>`;
+                case 'HEAT_PUMP':
+                    return `<span class="tag hp">HP ${fmt(a.currentPowerKw)}kW</span>`;
+                case 'HOME_EV_CHARGER':
+                    return a.currentPowerKw > 0
+                        ? `<span class="tag ev">EV ${fmt(a.currentPowerKw)}kW</span>`
+                        : `<span class="tag ev" style="opacity:0.4">EV idle</span>`;
+                default:
+                    return '';
+            }
+        }).join('');
+    }
+
+    // ── Render houses ─────────────────────────────────────────────
+    function renderHouses(houses) {
+        const exportingCount = houses.filter(h => h.currentNetPowerKw < 0).length;
+        const exportEl = document.getElementById('exportCount');
+        if (exportEl) {
+            exportEl.textContent = exportingCount > 0
+                ? `${exportingCount} exporting to grid`
+                : '';
+        }
+
+        document.getElementById('housesGrid').innerHTML = houses.map(h => {
+            const net = h.currentNetPowerKw;
+            const exporting = net < 0;
+            const evCharging = h.assets.some(
+                a => a.type === 'HOME_EV_CHARGER' && a.currentPowerKw > 0
+            );
+            return `
+        <div class="house-card ${exporting ? 'exporting' : ''} ${evCharging ? 'charging' : ''}">
+          <div class="house-id">${h.id.replace('house-', 'House ')}</div>
+          <div class="house-power ${net < 0 ? 'negative' : 'positive'}">
+            ${net < 0 ? '▼' : '▲'} ${fmt(Math.abs(net))} kW
+          </div>
+          <div class="asset-tags">${assetTags(h.assets)}</div>
+          <div style="margin-top: 6px;">
+            <span class="tag kwh">${fmt(h.netTotalKwh, 2)} kWh</span>
+          </div>
+        </div>`;
+        }).join('');
+    }
+
+    // ── Render chargers ───────────────────────────────────────────
+    function renderChargers(chargers) {
+        document.getElementById('chargerList').innerHTML = chargers.map(c => `
+      <div class="charger-row ${c.charging ? 'active' : ''}">
+        <div>
+          <div class="charger-name">${c.id.replace('pub-charger-', 'Charger ')}</div>
+          <div class="charger-kwh">${fmt(c.totalKwh, 2)} kWh total</div>
+        </div>
+        <div class="charger-status ${c.charging ? 'on' : ''}">
+          ${c.charging ? 'Charging' : 'Idle'}
+        </div>
+        <div class="charger-power">
+          ${c.charging ? fmt(c.currentPowerKw) + ' kW' : '—'}
+        </div>
+      </div>`).join('');
+    }
+
+    // ── Update chart ──────────────────────────────────────────────
+    function updateChart(history) {
+        const step = Math.max(1, Math.floor(history.length / 288));
+        const sampled = history.filter((_, i) => i % step === 0);
+        chart.data.labels = sampled.map(s => formatHHMM(s.time));
+        chart.data.datasets[0].data = sampled.map(s => fmt(s.totalPowerKw, 2));
+        chart.data.datasets[1].data = sampled.map(s => fmt(s.temperatureCelsius, 1));
+        chart.update('none');
+    }
+
+    // ── Poll ──────────────────────────────────────────────────────
+    async function poll() {
+        try {
+            const [state, history, summary, houses, chargers] = await Promise.all([
+                fetch('/api/simulation/state').then(r => r.json()),
+                fetch('/api/simulation/history').then(r => r.json()),
+                fetch('/api/neighbourhood/summary').then(r => r.json()),
+                fetch('/api/neighbourhood/houses').then(r => r.json()),
+                fetch('/api/neighbourhood/chargers').then(r => r.json())
+            ]);
+
+            // Top bar
+            document.getElementById('statusDot').className =
+                'dot ' + (state.running ? 'running' : '');
+            document.getElementById('simTime').textContent = formatTime(state.simulatedTime);
+            document.getElementById('season').textContent = seasonIcon(state.season) + ' ' + state.season;
+            document.getElementById('temp').textContent = fmt(state.temperatureCelsius) + '°C';
+            document.getElementById('totalPower').textContent = fmt(state.currentTotalPowerKw);
+
+            // Pause button
+            const btn = document.getElementById('btnPause');
+            btn.textContent = state.running ? 'Pause' : 'Resume';
+            btn.className = state.running ? '' : 'active';
+
+            // Summary
+            document.getElementById('statHouses').textContent = summary.totalHouses;
+            document.getElementById('statPv').textContent = summary.housesWithPv;
+            document.getElementById('statHp').textContent = summary.housesWithHeatPump;
+            document.getElementById('statEv').textContent = summary.housesWithHomeEv;
+
+            // Weather
+            document.getElementById('weatherIcon').textContent = cloudIcon(state.cloudinessFactor);
+            document.getElementById('weatherCloud').textContent =
+                Math.round(state.cloudinessFactor * 100) + '%';
+            document.getElementById('weatherTemp').textContent = fmt(state.temperatureCelsius) + '°C';
+            document.getElementById('weatherIrr').textContent =
+                Math.round(state.irradianceFactor * 100) + '%';
+
+            // Chart + houses + chargers
+            updateChart(history);
+            renderHouses(houses);
+            renderChargers(chargers);
+
+        } catch (e) {
+            console.error('Poll error:', e);
+        }
+    }
+
+    // ── Controls ──────────────────────────────────────────────────
+    async function togglePause() {
+        const state = await fetch('/api/simulation/state').then(r => r.json());
+        const action = state.running ? 'pause' : 'resume';
+        await fetch('/api/simulation/control', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({action})
+        });
+    }
+
+    // ── Boot ──────────────────────────────────────────────────────
+    poll();
+    setInterval(poll, 1000);
+</script>
+</body>
+</html>
