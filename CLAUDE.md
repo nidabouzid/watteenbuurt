@@ -60,6 +60,7 @@ Simulation parameters in `src/main/resources/application.yaml`:
 | `simulation.home-ev-fraction` | 0.20 | Fraction with home EV chargers |
 | `simulation.tick-interval-ms` | 200 | Simulation update interval |
 | `simulation.random-seed` | 42 | RNG seed for reproducibility |
+| `simulation.clock-start-time` | `2025-01-06T00:00:00` | Simulated clock start time (ISO-8601) |
 
 ## REST API
 
